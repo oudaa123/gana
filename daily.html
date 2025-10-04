@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>كراسة اليومية</title>
+<style>
+  :root {
+    --accent:#6ed0ff;
+    --btn:#ff9ad1;
+    --done:#d8d8d8;
+    --pending:#fff7a5;
+    --warning:#ffcccc;
+    --active:#4CAF50;
+  }
+
+  body {
+    font-family: Tahoma, Arial;
+    background: #e8f8ff;
+    margin: 0;
+    padding: 10px;
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 5px;
+    color: #004466;
+  }
+
+  #datetime {
+    text-align: center;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 5px;
+  }
+
+  #currentDateDisplay {
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: #004466;
+    margin-bottom: 10px;
+    padding: 5px;
+    background-color: #d8f0ff;
+    border-radius: 5px;
+  }
+
+  #topBar {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .inputs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+  }
+
+  input, button {
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+  }
+
+  input {
+    flex: 1 1 120px;
+  }
+
+  button {
+    background: var(--btn);
+    color: #000;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+  }
+
+  button:hover {
+    background: #ff7ec5;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+
+  th, td {
+    border: 1px solid #ccc;
+    padding: 6px;
+    text-align: center;
+  }
+
+  th {
+    background: var(--accent);
+  }
+
+  tr.done td {
+    text-decoration: line-through;
+    color: red;
+    background: var(--done);
+  }
+
+  tr.pending td {
+    background: var(--pending);
+  }
+
+  .day-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 10px;
+    justify-content: center;
+  }
+
+  .day-buttons button {
+    background: var(--accent);
+    border: none;
+  }
+
+  .day-buttons button.active {
+    background: var(--active);
+    color: white;
+    font-weight: bold;
+  }
+
+  .warning {
+    background-color: var(--warning) !important;
+  }
+
+  @media (max-width:600px){
+    input {flex:1 1 45%;}
+    button{flex:1 1 45%;}
+  }
+</style>
+</head>
+<body>
+
+<h2>📘اجل المحلات من جنة
+
+ كراسة اليومية</h2>
+<div id="datetime"></div>
+<div id="currentDateDisplay"></div>
+
+<div id="topBar">
+  <button onclick="confirmDeleteAll()">🗑️ حذف جميع البيانات</button>
+  <button onclick="confirmDeleteWeek()">🧹 حذف بيانات الأسبوع</button>
+</div>
+
+<div class="inputs">
+  <input type="text" id="person" placeholder="الاسم">
+  <input type="text" id="item" placeholder="الصنف">
+  <input type="number" id="qty" placeholder="الكمية">
+  <input type="number" id="price" placeholder="السعر (اختياري)">
+  <input type="text" id="receiver" placeholder="المستلم (يتعبأ تلقائياً)">
+  <button id="addBtn">➕ إضافة</button>
+</div>
+
+<div class="day-buttons" id="dayButtons"></div>
+
+<table>
+  <thead>
+    <tr>
+      <th>الاسم</th>
+      <th>الصنف</th>
+      <th>الكمية</th>
+      <th>السعر</th>
+      <th>المستلم</th>
+      <th>النتيجة</th>
+    </tr>
+  </thead>
+  <tbody id="tableBody"></tbody>
+</table>
+
+<script>
+let dailyRecords = JSON.parse(localStorage.getItem("dailyRecords") || "{}");
+let currentDisplayDate = new Date().toISOString().split("T")[0];
+const inputs = document.querySelectorAll("input");
+
+// 🕒 تحديث التاريخ والساعة
+function updateDateTime() {
+  const now = new Date();
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  const dateStr = now.toLocaleDateString('ar-EG', options);
+  const timeStr = now.toLocaleTimeString('ar-EG');
+  document.getElementById("datetime").textContent = `🕒 ${dateStr} - ${timeStr}`;
+  
+  // تحديث التاريخ المعروض للبيانات الحالية
+  updateCurrentDateDisplay();
+  
+  // التحقق من تغيير اليوم (لنقل البيانات تلقائياً)
+  const today = now.toISOString().split("T")[0];
+  if (today !== currentDisplayDate && currentDisplayDate === getTodayDate()) {
+    // إذا كان اليوم تغير ونحن نعرض بيانات اليوم الحالي
+    currentDisplayDate = today;
+    renderDayButtons();
+    renderTable(today);
+  }
+}
+
+// الحصول على تاريخ اليوم بصيغة YYYY-MM-DD
+function getTodayDate() {
+  return new Date().toISOString().split("T")[0];
+}
+
+// تحديث عرض التاريخ الحالي للبيانات المعروضة
+function updateCurrentDateDisplay() {
+  const displayDate = new Date(currentDisplayDate);
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  const dateStr = displayDate.toLocaleDateString('ar-EG', options);
+  
+  let displayText = `📅 البيانات المعروضة ليوم: ${dateStr}`;
+  
+  // إذا لم يكن التاريخ الحالي هو تاريخ اليوم، أضف زر للعودة لليوم الحالي
+  if (currentDisplayDate !== getTodayDate()) {
+    displayText += ` <button onclick="showToday()" style="margin-right:10px; padding:3px 8px; font-size:12px;">العودة لليوم الحالي</button>`;
+  }
+  
+  document.getElementById("currentDateDisplay").innerHTML = displayText;
+}
+
+// عرض بيانات اليوم الحالي
+function showToday() {
+  currentDisplayDate = getTodayDate();
+  updateCurrentDateDisplay();
+  renderDayButtons();
+  renderTable(currentDisplayDate);
+}
+
+setInterval(updateDateTime, 1000);
+updateDateTime();
+
+// ⌨️ التنقل بين الخانات بالـ Enter
+inputs.forEach((input, i) => {
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const next = inputs[i + 1];
+      if (next) next.focus();
+      else document.getElementById("addBtn").click();
+    }
+  });
+});
+
+// 🧭 عرض أزرار الأيام
+function renderDayButtons() {
+  const dayButtons = document.getElementById("dayButtons");
+  dayButtons.innerHTML = "";
+  
+  // إضافة زر اليوم الحالي أولاً
+  const todayBtn = document.createElement("button");
+  todayBtn.textContent = "اليوم الحالي";
+  todayBtn.onclick = () => {
+    currentDisplayDate = getTodayDate();
+    renderTable(currentDisplayDate);
+    updateCurrentDateDisplay();
+    renderDayButtons();
+  };
+  if (currentDisplayDate === getTodayDate()) {
+    todayBtn.classList.add("active");
+  }
+  dayButtons.appendChild(todayBtn);
+  
+  // عرض أزرار الأيام الأخرى
+  Object.keys(dailyRecords).sort().reverse().forEach(date => {
+    if (date !== getTodayDate()) {
+      const btn = document.createElement("button");
+      
+      // تنسيق التاريخ لعرضه بشكل مقروء
+      const dateObj = new Date(date);
+      const displayDate = dateObj.toLocaleDateString('ar-EG', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+      
+      btn.textContent = displayDate;
+      btn.title = date; // عرض التاريخ الكامل عند التمرير
+      
+      btn.onclick = () => {
+        currentDisplayDate = date;
+        renderTable(date);
+        updateCurrentDateDisplay();
+        renderDayButtons();
+      };
+      
+      if (date === currentDisplayDate) {
+        btn.classList.add("active");
+      }
+      
+      dayButtons.appendChild(btn);
+    }
+  });
+}
+
+// 📋 عرض جدول اليوم المحدد
+function renderTable(date) {
+  currentDisplayDate = date;
+  const table = document.getElementById("tableBody");
+  table.innerHTML = "";
+  const records = dailyRecords[date] || [];
+  
+  if (records.length === 0) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td colspan="6" style="text-align:center; padding:20px;">لا توجد بيانات لهذا اليوم</td>`;
+    table.appendChild(tr);
+  } else {
+    records.forEach((r, i) => {
+      const tr = document.createElement("tr");
+      tr.classList.add(r.returned ? "done" : "pending");
+      tr.innerHTML = `
+        <td>${r.person}</td>
+        <td>${r.item}</td>
+        <td>${r.qty || ""}</td>
+        <td>${r.price || ""}</td>
+        <td>${r.receiver}</td>
+        <td><button onclick="toggleReturn('${date}',${i})">${r.returned ? "تم الإرجاع" : "النتيجة"}</button></td>
+      `;
+      table.appendChild(tr);
+    });
+  }
+  
+  updateCurrentDateDisplay();
+}
+
+// 🔁 تبديل حالة الإرجاع
+function toggleReturn(date, index) {
+  const record = dailyRecords[date][index];
+  if (!record.returned) {
+    record.returned = true;
+  } else {
+    if (confirm(`هل أنت متأكد أن "${record.person}" لم يرجع؟`)) {
+      const pass = prompt("من فضلك أدخل كلمة السر:");
+      if (pass === "888") record.returned = false;
+      else return alert("كلمة السر غير صحيحة!");
+    }
+  }
+  saveData();
+  renderTable(date);
+}
+
+// 💾 حفظ البيانات
+function saveData() {
+  localStorage.setItem("dailyRecords", JSON.stringify(dailyRecords));
+  renderDayButtons();
+}
+
+// ➕ إضافة بيانات جديدة
+document.getElementById("addBtn").onclick = () => {
+  const person = document.getElementById("person").value.trim();
+  const item = document.getElementById("item").value.trim();
+  const qty = document.getElementById("qty").value.trim();
+  const price = document.getElementById("price").value.trim();
+  let receiver = document.getElementById("receiver").value.trim();
+
+  if (!person || !item) return alert("يرجى إدخال الاسم والصنف على الأقل");
+  if (!receiver) receiver = person;
+
+  // إضافة البيانات ليوم اليوم الحالي دائماً
+  const today = getTodayDate();
+  if (!dailyRecords[today]) dailyRecords[today] = [];
+  dailyRecords[today].push({ person, item, qty, price, receiver, returned: false });
+  saveData();
+  
+  // إذا كنا نعرض بيانات اليوم الحالي، قم بتحديث الجدول
+  if (currentDisplayDate === today) {
+    renderTable(today);
+  }
+
+  document.querySelectorAll("input").forEach(i => i.value = "");
+  document.getElementById("person").focus();
+};
+
+// 🧹 حذف بيانات الأسبوع بباسورد
+function confirmDeleteWeek() {
+  if (confirm("هل أنت متأكد من حذف بيانات الأسبوع؟")) {
+    const pass = prompt("من فضلك أدخل كلمة السر:");
+    if (pass === "888") {
+      const todayDate = new Date();
+      Object.keys(dailyRecords).forEach(date => {
+        const diff = (todayDate - new Date(date)) / (1000 * 60 * 60 * 24);
+        if (diff > 7) delete dailyRecords[date];
+      });
+      saveData();
+      alert("تم حذف بيانات الأسبوع القديمة بنجاح ✅");
+      renderTable(currentDisplayDate);
+    } else {
+      alert("كلمة السر غير صحيحة!");
+    }
+  }
+}
+
+// 🗑️ حذف جميع البيانات
+function confirmDeleteAll() {
+  if (confirm("هل أنت متأكد من حذف جميع البيانات؟")) {
+    // التحقق من وجود أشخاص لم يسددوا
+    const hasPending = Object.values(dailyRecords).some(records => 
+      records.some(record => !record.returned)
+    );
+    
+    if (hasPending) {
+      const confirmDelete = confirm("⚠️ تحذير: هناك أشخاص لم يسددوا بعد. هل تريد المتابعة مع حذف جميع البيانات؟");
+      if (!confirmDelete) return;
+    }
+    
+    const pass = prompt("من فضلك أدخل كلمة السر:");
+    if (pass === "888") {
+      dailyRecords = {};
+      saveData();
+      alert("تم حذف جميع البيانات بنجاح ✅");
+      renderTable(currentDisplayDate);
+    } else {
+      alert("كلمة السر غير صحيحة!");
+    }
+  }
+}
+
+// 🟢 تحميل البيانات الافتراضية
+renderDayButtons();
+renderTable(currentDisplayDate);
+</script>
+
+</body>
+</html>
