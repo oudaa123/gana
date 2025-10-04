@@ -176,10 +176,100 @@
 
 <script>
 let dailyRecords = JSON.parse(localStorage.getItem("dailyRecords") || "{}");
-let currentDisplayDate = new Date().toISOString().split("T")[0];
+let lastKnownDate = getTodayDate(); // تتبع آخر تاريخ معروف
 const inputs = document.querySelectorAll("input");
 
-// 🕒 تحديث التاريخ والساعة
+// الحصول على تاريخ اليوم بصيغة YYYY-MM-DD (التوقيت المحلي)
+function getTodayDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// تحويل تاريخ من صيغة YYYY-MM-DD إلى تاريخ عربي
+function formatArabicDate(dateString) {
+  const date = new Date(dateString + 'T12:00:00');
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  return date.toLocaleDateString('ar-EG', options);
+}
+
+// حساب الفرق بين تاريخين بالأيام
+function getDaysDifference(date1, date2) {
+  const oneDay = 24 * 60 * 60 * 1000;
+  const firstDate = new Date(date1);
+  const secondDate = new Date(date2);
+  const diffDays = Math.round(Math.abs((firstDate - secondDate) / oneDay));
+  return diffDays;
+}
+
+// التحقق من تغيير اليوم وتحديث البيانات تلقائياً
+function checkDateChange() {
+  const today = getTodayDate();
+  
+  // إذا تغير اليوم
+  if (today !== lastKnownDate) {
+    console.log('تم تغيير اليوم من', lastKnownDate, 'إلى', today);
+    lastKnownDate = today;
+    
+    // تحديث الواجهة لعرض بيانات اليوم الجديد
+    renderDayButtons();
+    renderTable(today);
+    
+    // إشعار للمستخدم بأن اليوم تغير
+    showDateChangeNotification();
+  }
+}
+
+// عرض إشعار تغيير اليوم
+function showDateChangeNotification() {
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--active);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    z-index: 1000;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    animation: slideDown 0.5s ease;
+  `;
+  
+  notification.textContent = `🎉 تم الانتقال تلقائياً إلى بيانات يوم ${formatArabicDate(getTodayDate())}`;
+  
+  document.body.appendChild(notification);
+  
+  // إزالة الإشعار بعد 3 ثواني
+  setTimeout(() => {
+    notification.style.animation = 'slideUp 0.5s ease';
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 500);
+  }, 3000);
+}
+
+// إضافة أنيميشن للإشعار
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideDown {
+    from { transform: translateX(-50%) translateY(-100px); opacity: 0; }
+    to { transform: translateX(-50%) translateY(0); opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { transform: translateX(-50%) translateY(0); opacity: 1; }
+    to { transform: translateX(-50%) translateY(-100px); opacity: 0; }
+  }
+`;
+document.head.appendChild(style);
+
+// 🕒 تحديث التاريخ والساعة والتحقق من تغيير اليوم
 function updateDateTime() {
   const now = new Date();
   const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -187,46 +277,21 @@ function updateDateTime() {
   const timeStr = now.toLocaleTimeString('ar-EG');
   document.getElementById("datetime").textContent = `🕒 ${dateStr} - ${timeStr}`;
   
-  // تحديث التاريخ المعروض للبيانات الحالية
-  updateCurrentDateDisplay();
+  // التحقق من تغيير اليوم
+  checkDateChange();
   
-  // التحقق من تغيير اليوم (لنقل البيانات تلقائياً)
-  const today = now.toISOString().split("T")[0];
-  if (today !== currentDisplayDate && currentDisplayDate === getTodayDate()) {
-    // إذا كان اليوم تغير ونحن نعرض بيانات اليوم الحالي
-    currentDisplayDate = today;
-    renderDayButtons();
-    renderTable(today);
-  }
-}
-
-// الحصول على تاريخ اليوم بصيغة YYYY-MM-DD
-function getTodayDate() {
-  return new Date().toISOString().split("T")[0];
+  // تحديث العرض دائماً لبيانات اليوم الحالي
+  updateCurrentDateDisplay();
 }
 
 // تحديث عرض التاريخ الحالي للبيانات المعروضة
 function updateCurrentDateDisplay() {
-  const displayDate = new Date(currentDisplayDate);
-  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-  const dateStr = displayDate.toLocaleDateString('ar-EG', options);
+  const today = getTodayDate();
+  const dateStr = formatArabicDate(today);
   
   let displayText = `📅 البيانات المعروضة ليوم: ${dateStr}`;
   
-  // إذا لم يكن التاريخ الحالي هو تاريخ اليوم، أضف زر للعودة لليوم الحالي
-  if (currentDisplayDate !== getTodayDate()) {
-    displayText += ` <button onclick="showToday()" style="margin-right:10px; padding:3px 8px; font-size:12px;">العودة لليوم الحالي</button>`;
-  }
-  
   document.getElementById("currentDateDisplay").innerHTML = displayText;
-}
-
-// عرض بيانات اليوم الحالي
-function showToday() {
-  currentDisplayDate = getTodayDate();
-  updateCurrentDateDisplay();
-  renderDayButtons();
-  renderTable(currentDisplayDate);
 }
 
 setInterval(updateDateTime, 1000);
@@ -249,55 +314,44 @@ function renderDayButtons() {
   const dayButtons = document.getElementById("dayButtons");
   dayButtons.innerHTML = "";
   
+  const today = getTodayDate();
+  
   // إضافة زر اليوم الحالي أولاً
   const todayBtn = document.createElement("button");
   todayBtn.textContent = "اليوم الحالي";
   todayBtn.onclick = () => {
-    currentDisplayDate = getTodayDate();
-    renderTable(currentDisplayDate);
+    renderTable(today);
     updateCurrentDateDisplay();
     renderDayButtons();
   };
-  if (currentDisplayDate === getTodayDate()) {
-    todayBtn.classList.add("active");
-  }
+  todayBtn.classList.add("active"); // دائمًا نشط لأنه يعرض اليوم الحالي
   dayButtons.appendChild(todayBtn);
   
-  // عرض أزرار الأيام الأخرى
-  Object.keys(dailyRecords).sort().reverse().forEach(date => {
-    if (date !== getTodayDate()) {
-      const btn = document.createElement("button");
-      
-      // تنسيق التاريخ لعرضه بشكل مقروء
-      const dateObj = new Date(date);
-      const displayDate = dateObj.toLocaleDateString('ar-EG', { 
-        weekday: 'short', 
-        month: 'short', 
-        day: 'numeric' 
-      });
-      
-      btn.textContent = displayDate;
-      btn.title = date; // عرض التاريخ الكامل عند التمرير
-      
-      btn.onclick = () => {
-        currentDisplayDate = date;
-        renderTable(date);
-        updateCurrentDateDisplay();
-        renderDayButtons();
-      };
-      
-      if (date === currentDisplayDate) {
-        btn.classList.add("active");
+  // عرض أزرار الأيام الأخرى (التاريخ فقط بدون زر تفاعلي)
+  Object.keys(dailyRecords)
+    .sort()
+    .reverse()
+    .forEach(date => {
+      if (date !== today) {
+        const btn = document.createElement("button");
+        const displayDate = formatArabicDate(date);
+        btn.textContent = displayDate.split('، ')[1];
+        btn.title = displayDate;
+        btn.onclick = () => {
+          // عند النقر على يوم آخر، نعود تلقائياً لليوم الحالي بعد ثانيتين
+          renderTable(date);
+          setTimeout(() => {
+            renderTable(today);
+            alert(`تم عرض بيانات ${displayDate} مؤقتاً. العودة لبيانات اليوم الحالي.`);
+          }, 2000);
+        };
+        dayButtons.appendChild(btn);
       }
-      
-      dayButtons.appendChild(btn);
-    }
-  });
+    });
 }
 
 // 📋 عرض جدول اليوم المحدد
 function renderTable(date) {
-  currentDisplayDate = date;
   const table = document.getElementById("tableBody");
   table.innerHTML = "";
   const records = dailyRecords[date] || [];
@@ -338,7 +392,7 @@ function toggleReturn(date, index) {
     }
   }
   saveData();
-  renderTable(date);
+  renderTable(getTodayDate()); // العودة دائمًا لبيانات اليوم الحالي
 }
 
 // 💾 حفظ البيانات
@@ -364,10 +418,8 @@ document.getElementById("addBtn").onclick = () => {
   dailyRecords[today].push({ person, item, qty, price, receiver, returned: false });
   saveData();
   
-  // إذا كنا نعرض بيانات اليوم الحالي، قم بتحديث الجدول
-  if (currentDisplayDate === today) {
-    renderTable(today);
-  }
+  // عرض بيانات اليوم الحالي
+  renderTable(today);
 
   document.querySelectorAll("input").forEach(i => i.value = "");
   document.getElementById("person").focus();
@@ -375,17 +427,31 @@ document.getElementById("addBtn").onclick = () => {
 
 // 🧹 حذف بيانات الأسبوع بباسورد
 function confirmDeleteWeek() {
-  if (confirm("هل أنت متأكد من حذف بيانات الأسبوع؟")) {
+  if (confirm("هل أنت متأكد من حذف بيانات الأسبوع؟ سيتم حذف جميع البيانات الأقدم من 7 أيام.")) {
     const pass = prompt("من فضلك أدخل كلمة السر:");
     if (pass === "888") {
-      const todayDate = new Date();
-      Object.keys(dailyRecords).forEach(date => {
-        const diff = (todayDate - new Date(date)) / (1000 * 60 * 60 * 24);
-        if (diff > 7) delete dailyRecords[date];
+      const today = getTodayDate();
+      let deletedCount = 0;
+      
+      const dates = Object.keys(dailyRecords);
+      
+      dates.forEach(date => {
+        const daysDifference = getDaysDifference(today, date);
+        if (daysDifference > 7) {
+          delete dailyRecords[date];
+          deletedCount++;
+        }
       });
+      
       saveData();
-      alert("تم حذف بيانات الأسبوع القديمة بنجاح ✅");
-      renderTable(currentDisplayDate);
+      
+      if (deletedCount > 0) {
+        alert(`تم حذف ${deletedCount} يوم من البيانات القديمة بنجاح ✅`);
+      } else {
+        alert("لا توجد بيانات أقدم من 7 أيام لحذفها");
+      }
+      
+      renderTable(today);
     } else {
       alert("كلمة السر غير صحيحة!");
     }
@@ -395,7 +461,6 @@ function confirmDeleteWeek() {
 // 🗑️ حذف جميع البيانات
 function confirmDeleteAll() {
   if (confirm("هل أنت متأكد من حذف جميع البيانات؟")) {
-    // التحقق من وجود أشخاص لم يسددوا
     const hasPending = Object.values(dailyRecords).some(records => 
       records.some(record => !record.returned)
     );
@@ -410,16 +475,16 @@ function confirmDeleteAll() {
       dailyRecords = {};
       saveData();
       alert("تم حذف جميع البيانات بنجاح ✅");
-      renderTable(currentDisplayDate);
+      renderTable(getTodayDate());
     } else {
       alert("كلمة السر غير صحيحة!");
     }
   }
 }
 
-// 🟢 تحميل البيانات الافتراضية
+// 🟢 تحميل البيانات الافتراضية - دائماً نبدأ ببيانات اليوم الحالي
 renderDayButtons();
-renderTable(currentDisplayDate);
+renderTable(getTodayDate());
 </script>
 
 </body>
