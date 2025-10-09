@@ -152,7 +152,7 @@
 <div class="inputs">
   <input type="text" id="person" placeholder="الاسم">
   <input type="text" id="item" placeholder="الصنف">
-  <input type="number" id="qty" placeholder="الكمية">
+  <input type="number" id="qty" placeholder="الكمية" value="1">
   <input type="number" id="price" placeholder="السعر (اختياري)">
   <input type="text" id="receiver" placeholder="المستلم (يتعبأ تلقائياً)">
   <button id="addBtn">➕ إضافة</button>
@@ -168,7 +168,7 @@
       <th>الكمية</th>
       <th>السعر</th>
       <th>المستلم</th>
-      <th>النتيجة</th>
+      <th>الحالة</th>
     </tr>
   </thead>
   <tbody id="tableBody"></tbody>
@@ -342,7 +342,7 @@ function renderTable(date) {
         <td>${r.qty || ""}</td>
         <td>${r.price || ""}</td>
         <td>${r.receiver}</td>
-        <td><button onclick="toggleReturn('${date}',${i})">${r.returned ? "تم الإرجاع" : "النتيجة"}</button></td>
+        <td><button onclick="toggleReturn('${date}',${i})">${r.returned ? "رجع" : "لم يرجع"}</button></td>
       `;
       table.appendChild(tr);
     });
@@ -399,6 +399,7 @@ document.getElementById("addBtn").onclick = () => {
   }
 
   document.querySelectorAll("input").forEach(i => i.value = "");
+  document.getElementById("qty").value = "1"; // إعادة تعيين الكمية إلى 1
   document.getElementById("person").focus();
 };
 
