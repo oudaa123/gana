@@ -76,15 +76,9 @@
 
   .cashier-section {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 20px;
     margin-bottom: 20px;
-  }
-
-  @media (max-width: 768px) {
-    .cashier-section {
-      grid-template-columns: 1fr;
-    }
   }
 
   .input-panel {
@@ -257,29 +251,6 @@
     font-weight: bold;
   }
 
-  .summary-panel {
-    background: #f8fdff;
-    border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-  }
-
-  .summary-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px dashed #ccc;
-  }
-
-  .summary-total {
-    font-weight: bold;
-    font-size: 18px;
-    color: var(--primary);
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 2px solid var(--primary);
-  }
-
   .warning {
     background-color: var(--warning) !important;
   }
@@ -293,11 +264,12 @@
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 10px;
     margin-top: 15px;
-    max-height: 300px;
+    max-height: 200px;
     overflow-y: auto;
     padding: 10px;
     border: 1px solid #eee;
     border-radius: 8px;
+    background: #f9f9f9;
   }
 
   .product-item {
@@ -367,6 +339,11 @@
       </div>
       
       <div class="input-group">
+        <label>المنتجات المتاحة</label>
+        <div class="product-grid" id="productGrid"></div>
+      </div>
+      
+      <div class="input-group">
         <label for="qty">الكمية</label>
         <div class="quantity-controls">
           <button type="button" onclick="decreaseQuantity()">-</button>
@@ -387,32 +364,6 @@
       
       <div class="btn-group">
         <button id="addBtn" class="btn-success">➕ إضافة</button>
-        <button onclick="clearForm()" class="btn-secondary">🗑️ مسح النموذج</button>
-      </div>
-    </div>
-    
-    <div class="summary-panel">
-      <h3>المنتجات المتاحة</h3>
-      <div class="product-grid" id="productGrid"></div>
-      
-      <h3 style="margin-top: 20px;">ملخص اليوم</h3>
-      <div id="dailySummary">
-        <div class="summary-item">
-          <span>عدد المعاملات:</span>
-          <span id="transactionsCount">0</span>
-        </div>
-        <div class="summary-item">
-          <span>إجمالي المبيعات:</span>
-          <span id="totalSales">0 جنيه</span>
-        </div>
-        <div class="summary-item">
-          <span>المستحق تحصيله:</span>
-          <span id="pendingAmount">0 جنيه</span>
-        </div>
-        <div class="summary-total">
-          <span>صافي اليوم:</span>
-          <span id="netAmount">0 جنيه</span>
-        </div>
       </div>
     </div>
   </div>
@@ -520,7 +471,6 @@ function checkDateChange() {
     // تحديث الواجهة
     renderDayButtons();
     renderTable(today);
-    updateDailySummary();
   }
 }
 
@@ -559,7 +509,6 @@ function showToday() {
   updateCurrentDateDisplay();
   renderDayButtons();
   renderTable(currentDisplayDate);
-  updateDailySummary();
 }
 
 setInterval(updateDateTime, 1000);
@@ -603,6 +552,11 @@ document.getElementById("item").addEventListener("input", function() {
         document.getElementById("item").value = product;
         suggestions.classList.add("hidden");
         document.getElementById("price").focus();
+        
+        // إضافة تأثير التحديد
+        document.querySelectorAll(".product-item").forEach(item => {
+          item.classList.remove("selected");
+        });
       };
       suggestions.appendChild(div);
     });
@@ -657,7 +611,6 @@ function renderDayButtons() {
     renderTable(today);
     updateCurrentDateDisplay();
     renderDayButtons();
-    updateDailySummary();
   };
   if (currentDisplayDate === today) {
     todayBtn.classList.add("active");
@@ -680,7 +633,6 @@ function renderDayButtons() {
           renderTable(date);
           updateCurrentDateDisplay();
           renderDayButtons();
-          updateDailySummary();
         };
         
         if (date === currentDisplayDate) {
@@ -726,29 +678,6 @@ function renderTable(date) {
   }
   
   updateCurrentDateDisplay();
-  updateDailySummary();
-}
-
-// تحديث ملخص اليوم
-function updateDailySummary() {
-  const records = dailyRecords[currentDisplayDate] || [];
-  const transactionsCount = records.length;
-  const totalSales = records.reduce((sum, record) => {
-    return sum + (parseFloat(record.price || 0) * parseInt(record.qty || 1));
-  }, 0);
-  
-  const pendingAmount = records
-    .filter(record => !record.returned)
-    .reduce((sum, record) => {
-      return sum + (parseFloat(record.price || 0) * parseInt(record.qty || 1));
-    }, 0);
-  
-  const netAmount = totalSales - pendingAmount;
-  
-  document.getElementById("transactionsCount").textContent = transactionsCount;
-  document.getElementById("totalSales").textContent = totalSales.toFixed(2) + " جنيه";
-  document.getElementById("pendingAmount").textContent = pendingAmount.toFixed(2) + " جنيه";
-  document.getElementById("netAmount").textContent = netAmount.toFixed(2) + " جنيه";
 }
 
 // 🔁 تبديل حالة الإرجاع
@@ -765,11 +694,15 @@ function toggleReturn(date, index) {
   }
   saveData();
   renderTable(currentDisplayDate);
-  updateDailySummary();
 }
 
-// حذف سجل
+// حذف سجل (يتطلب كلمة سر)
 function deleteRecord(date, index) {
+  const pass = prompt("من فضلك أدخل كلمة السر للحذف:");
+  if (pass !== "888") {
+    return alert("كلمة السر غير صحيحة!");
+  }
+  
   if (confirm("هل أنت متأكد من حذف هذا السجل؟")) {
     dailyRecords[date].splice(index, 1);
     if (dailyRecords[date].length === 0) {
@@ -777,7 +710,6 @@ function deleteRecord(date, index) {
     }
     saveData();
     renderTable(currentDisplayDate);
-    updateDailySummary();
   }
 }
 
@@ -824,13 +756,7 @@ document.getElementById("addBtn").onclick = () => {
     renderDayButtons();
   }
   
-  updateDailySummary();
-  clearForm();
-  document.getElementById("person").focus();
-};
-
-// مسح النموذج
-function clearForm() {
+  // مسح الحقول بعد الإضافة
   document.getElementById("person").value = "";
   document.getElementById("item").value = "";
   document.getElementById("qty").value = "1";
@@ -841,7 +767,9 @@ function clearForm() {
   document.querySelectorAll(".product-item").forEach(item => {
     item.classList.remove("selected");
   });
-}
+  
+  document.getElementById("person").focus();
+};
 
 // 🧹 حذف بيانات الأسبوع بباسورد
 function confirmDeleteWeek() {
@@ -870,7 +798,6 @@ function confirmDeleteWeek() {
       }
       
       renderTable(currentDisplayDate);
-      updateDailySummary();
     } else {
       alert("كلمة السر غير صحيحة!");
     }
@@ -895,7 +822,6 @@ function confirmDeleteAll() {
       saveData();
       alert("تم حذف جميع البيانات بنجاح ✅");
       renderTable(currentDisplayDate);
-      updateDailySummary();
     } else {
       alert("كلمة السر غير صحيحة!");
     }
@@ -972,7 +898,6 @@ function removeProduct(index) {
 renderDayButtons();
 renderTable(currentDisplayDate);
 renderProductGrid();
-updateDailySummary();
 </script>
 
 </body>
