@@ -22,7 +22,7 @@
       font-family: "Tahoma", sans-serif;
       background: var(--bg);
       margin: 0;
-      padding: 18px;
+      padding: 12px;
       -webkit-font-smoothing:antialiased;
       transition: background 0.3s;
     }
@@ -31,7 +31,7 @@
       max-width: 980px;
       margin: auto;
       background: var(--card);
-      padding: 18px;
+      padding: 15px;
       border-radius: 12px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.06);
     }
@@ -39,13 +39,13 @@
     h1 {
       text-align: center;
       color: var(--green);
-      margin: 6px 0 18px 0;
-      font-size: 26px;
+      margin: 6px 0 15px 0;
+      font-size: 22px;
     }
 
     .top-row {
       display:flex;
-      gap:10px;
+      gap:8px;
       justify-content:flex-start;
       align-items:center;
       margin-bottom:12px;
@@ -53,12 +53,13 @@
     }
 
     .top-row button {
-      padding:8px 12px;
+      padding:8px 10px;
       border-radius:8px;
       border:none;
       cursor:pointer;
       font-weight:700;
       transition: all 0.2s;
+      font-size: 14px;
     }
 
     .export { background:#81c784;color:#fff }
@@ -70,23 +71,50 @@
 
     .layout {
       display: flex;
-      gap: 18px;
+      flex-direction: column;
+      gap: 15px;
     }
 
     .left {
-      width: 36%;
-      min-width: 240px;
+      width: 100%;
     }
 
     .right {
-      width: 64%;
+      width: 100%;
     }
 
     .section-title {
       color: var(--green);
       margin: 6px 0;
       font-weight:700;
-      font-size:18px;
+      font-size:16px;
+    }
+
+    .category-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .category-tab {
+      padding: 8px 12px;
+      background: #e0f2f1;
+      border: 1px solid #80cbc4;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .category-tab.active {
+      background: var(--green);
+      color: white;
+      border-color: var(--green);
+    }
+
+    .category-tab:hover:not(.active) {
+      background: #b2dfdb;
     }
 
     .buttons-area {
@@ -106,9 +134,9 @@
       background: var(--btn-light);
       border:1px solid #81c784;
       color:var(--green);
-      padding:12px;
+      padding:10px;
       border-radius:10px;
-      font-size:18px;
+      font-size:16px;
       cursor:pointer;
       transition:0.15s;
     }
@@ -133,6 +161,7 @@
       font-weight:700;
       margin-left:8px;
       transition: all 0.2s;
+      font-size: 12px;
     }
     .small-btn:hover { background:#e53935; transform: scale(1.05); }
     .small-btn.edit { background:var(--warning); }
@@ -142,6 +171,7 @@
       display:flex;
       gap:8px;
       margin-top:8px;
+      flex-direction: column;
     }
 
     .add-row input {
@@ -149,7 +179,7 @@
       padding:8px;
       border-radius:8px;
       border:1px solid #bbb;
-      font-size:15px;
+      font-size:14px;
       transition: all 0.2s;
     }
 
@@ -168,16 +198,17 @@
       cursor:pointer;
       font-weight:700;
       transition: all 0.2s;
+      font-size: 14px;
     }
     .add-row button:hover { background:#1b5e20; transform: translateY(-2px); }
 
-    label { display:block; margin-top:8px; font-weight:700; color:#2b2b2b; }
+    label { display:block; margin-top:8px; font-weight:700; color:#2b2b2b; font-size: 14px; }
     input[type="text"], input[type="number"] {
       width:100%;
       padding:10px;
       border-radius:8px;
       border:1px solid #ccc;
-      font-size:16px;
+      font-size:14px;
       box-sizing:border-box;
       transition: all 0.2s;
     }
@@ -188,13 +219,13 @@
       transform: scale(1.01);
     }
 
-    .save-row { display:flex; gap:8px; margin-top:10px; }
+    .save-row { display:flex; gap:8px; margin-top:10px; flex-direction: column; }
     .save-row button {
       flex:1;
       padding:12px;
       border-radius:10px;
       border:none;
-      font-size:16px;
+      font-size:14px;
       cursor:pointer;
       font-weight:700;
       background: var(--btn-light);
@@ -212,7 +243,7 @@
       border-collapse:collapse;
       margin-top:14px;
       direction: rtl;
-      font-size:15px;
+      font-size:14px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       border-radius: 8px;
       overflow: hidden;
@@ -239,7 +270,7 @@
       border:none;
       cursor:pointer;
       font-weight:700;
-      font-size:13px;
+      font-size:12px;
       margin:0 4px;
       transition: all 0.2s;
     }
@@ -261,14 +292,13 @@
     
     .filter-row {
       display: flex;
-      gap: 10px;
+      flex-direction: column;
+      gap: 8px;
       margin-top: 8px;
-      flex-wrap: wrap;
     }
     
     .filter-row input, .filter-row select {
       flex: 1;
-      min-width: 120px;
       padding: 8px;
       border-radius: 6px;
       border: 1px solid #ccc;
@@ -293,6 +323,7 @@
       opacity: 0;
       transition: opacity 0.3s;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      max-width: 80%;
     }
     
     .notification.success { background: var(--success); }
@@ -309,7 +340,7 @@
     .stats {
       display: flex;
       justify-content: center;
-      gap: 15px;
+      gap: 10px;
       margin: 10px 0;
       flex-wrap: wrap;
     }
@@ -320,7 +351,7 @@
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       text-align: center;
-      min-width: 120px;
+      min-width: 100px;
       transition: all 0.3s;
     }
     
@@ -330,21 +361,74 @@
     }
     
     .stat-value {
-      font-size: 24px;
+      font-size: 20px;
       font-weight: bold;
       color: var(--green);
     }
     
     .stat-label {
-      font-size: 14px;
+      font-size: 12px;
       color: var(--muted);
     }
 
-    @media(max-width:820px){
-      .layout{flex-direction:column;}
-      .left, .right{width:100%;}
-      .filter-row { flex-direction: column; }
-      .stat-box { min-width: 100px; }
+    /* تحسينات للشاشات المتوسطة والكبيرة */
+    @media(min-width: 768px) {
+      body {
+        padding: 18px;
+      }
+      
+      .container {
+        padding: 18px;
+      }
+      
+      h1 {
+        font-size: 26px;
+      }
+      
+      .top-row button {
+        font-size: 16px;
+      }
+      
+      .layout {
+        flex-direction: row;
+      }
+      
+      .left {
+        width: 36%;
+      }
+      
+      .right {
+        width: 64%;
+      }
+      
+      .add-row {
+        flex-direction: row;
+      }
+      
+      .save-row {
+        flex-direction: row;
+      }
+      
+      .filter-row {
+        flex-direction: row;
+      }
+      
+      .category-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+      }
+      
+      .stat-box {
+        min-width: 120px;
+      }
+      
+      .stat-value {
+        font-size: 24px;
+      }
+      
+      .stat-label {
+        font-size: 14px;
+      }
     }
   </style>
 </head>
@@ -364,6 +448,9 @@
       <div class="left">
         <div>
           <div class="section-title">📦 الأصناف</div>
+          
+          <div class="category-tabs" id="categoryTabs"></div>
+          
           <div id="itemsArea" class="buttons-area"></div>
 
           <div class="add-row" style="margin-top:8px">
@@ -439,15 +526,49 @@
 
 <script>
   // Storage keys
-  const KEY_ITEMS = 'selaf_items_list_v2';
-  const KEY_SHOPS = 'selaf_shops_list_v2';
-  const KEY_DATA  = 'selaf_records_data_v2';
+  const KEY_ITEMS = 'selaf_items_list_v3';
+  const KEY_SHOPS = 'selaf_shops_list_v3';
+  const KEY_DATA  = 'selaf_records_data_v3';
+  const KEY_CATEGORIES = 'selaf_categories_v3';
+
+  // Default categories and items
+  const defaultCategories = {
+    "جرابات": [
+      "جراب لبوبو حريمي", "جراب فراشه جديد", "جراب مفحم اندرويد فري", 
+      "جراب مفحم ايفون باكيت برتقالي", "جراب جلد مصري", "جراب جلد الك", 
+      "جراب جلد شركات", "جراب 4k", "جراب بامب مربعات", "جراب بامب حريمي", 
+      "جراب شفاف جديد", "جراب ليزر", "جراب مضلع", "جراب عدسه واير ليس", 
+      "جراب وش وظهر", "جراب كياه"
+    ],
+    "أسكرينات": [
+      "اسكرين غوريلا", "اسكرين اتش دي hd", "اسكرين فاميه", "اسكرين قطه", 
+      "اسكرين الك", "اسكرين 360", "اسكرينة غزاله", "اسكرين الترا", "اسكرين تاب مدارس"
+    ],
+    "سماعات": [
+      "سماعه p47", "سماعه صودو", "سماعه p9", "سماعه cx211", "سماعه j510", 
+      "سماعه ياسون", "سماعه الك مشكل", "سماعه t3+t5", "سماعه t8+t10", 
+      "سماعه ايربود برو", "سماعه m10", "سماعه ياسون", "سماعه تايب سي", 
+      "سماعه ايفون بلوتوث", "سماعه ايفون مباشر", "سماعة فلاشة"
+    ],
+    "فلاشات": [
+      "فلاشة 8", "فلاشة 16", "فلاشة 4", "فلاشة 32", "فلاشه 64", "فلاشه 128"
+    ],
+    "مومري": [
+      "مومري اصلي 4", "مومري اصلي 8", "مومري اصلي 16", "مومري اصلي 32", 
+      "مومري اصلي 64", "مومري اصلي 128"
+    ],
+    "بطاريات": [
+      "بطارية الك 1000 امبير", "صب112", "صب 113", "صب 125", "صب"
+    ]
+  };
 
   // Load or defaults
-  let items = JSON.parse(localStorage.getItem(KEY_ITEMS)) || ["جراب نوكيا","شاحن سامسونج","كابل تايب سي","سماعة بلوتوث"];
+  let categories = JSON.parse(localStorage.getItem(KEY_CATEGORIES)) || defaultCategories;
+  let items = JSON.parse(localStorage.getItem(KEY_ITEMS)) || [];
   let shops = JSON.parse(localStorage.getItem(KEY_SHOPS)) || ["محل الأصدقاء","الموبايلات العصري"];
   let records = JSON.parse(localStorage.getItem(KEY_DATA)) || [];
   let filteredRecords = [...records];
+  let currentCategory = Object.keys(categories)[0]; // Default to first category
 
   // DOM
   const itemsArea = document.getElementById('itemsArea');
@@ -457,6 +578,7 @@
   const filterSection = document.getElementById('filterSection');
   const toggleFilter = document.getElementById('toggleFilter');
   const statsContainer = document.getElementById('statsContainer');
+  const categoryTabs = document.getElementById('categoryTabs');
 
   const newItemInput = document.getElementById('newItemInput');
   const addItemBtn = document.getElementById('addItemBtn');
@@ -498,7 +620,7 @@
   // Update statistics
   function updateStats() {
     const totalRecords = records.length;
-    const totalItems = items.length;
+    const totalItems = Object.values(categories).flat().length;
     const totalShops = shops.length;
     
     statsContainer.innerHTML = `
@@ -517,24 +639,48 @@
     `;
   }
 
+  // Render categories
+  function renderCategories() {
+    categoryTabs.innerHTML = '';
+    
+    Object.keys(categories).forEach(category => {
+      const tab = document.createElement('div');
+      tab.className = `category-tab ${currentCategory === category ? 'active' : ''}`;
+      tab.textContent = category;
+      tab.dataset.category = category;
+      categoryTabs.appendChild(tab);
+    });
+    
+    // Add event listeners for category tabs
+    document.querySelectorAll('.category-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        currentCategory = tab.dataset.category;
+        renderCategories();
+        renderItems();
+      });
+    });
+  }
+
   // Render functions
   function renderItems(){
     itemsArea.innerHTML = '';
     
-    if (items.length === 0) {
+    const categoryItems = categories[currentCategory] || [];
+    
+    if (categoryItems.length === 0) {
       itemsArea.innerHTML = '<div class="empty-state">لا توجد أصناف مضافة</div>';
       return;
     }
     
-    items.forEach((name, idx) => {
+    categoryItems.forEach((name, idx) => {
       const div = document.createElement('div');
       div.className = `item-btn ${selectedItemIndex === idx ? 'selected' : ''}`;
       div.dataset.idx = idx;
       div.dataset.type = 'item';
       div.innerHTML = `<span style="flex:1;text-align:right">${escapeHtml(name)}</span>
                        <div style="display:flex;gap:8px">
-                         <button class="small-btn edit" data-i="${idx}" data-type="edit-item">تعديل</button>
-                         <button class="small-btn" data-i="${idx}" data-type="del-item">حذف</button>
+                         <button class="small-btn edit" data-category="${currentCategory}" data-i="${idx}" data-type="edit-item">تعديل</button>
+                         <button class="small-btn" data-category="${currentCategory}" data-i="${idx}" data-type="del-item">حذف</button>
                        </div>`;
       itemsArea.appendChild(div);
     });
@@ -590,6 +736,12 @@
   }
 
   // Helpers
+  function saveCategories() { 
+    localStorage.setItem(KEY_CATEGORIES, JSON.stringify(categories)); 
+    showNotification('تم حفظ الفئات بنجاح');
+    updateStats();
+  }
+  
   function saveItems(){ 
     localStorage.setItem(KEY_ITEMS, JSON.stringify(items)); 
     showNotification('تم حفظ الأصناف بنجاح');
@@ -625,6 +777,7 @@
   }
 
   // Initial render
+  renderCategories();
   renderItems();
   renderShops();
   renderRecords();
@@ -635,6 +788,7 @@
     const t = e.target;
     const type = t.dataset.type;
     const i = t.dataset.i;
+    const category = t.dataset.category;
     
     // Check if user clicked on the main button area (not the small buttons)
     if (t.classList.contains('item-btn') || t.parentElement.classList.contains('item-btn')) {
@@ -645,7 +799,7 @@
       if (itemType === 'item') {
         // Select item
         selectedItemIndex = parseInt(itemIdx);
-        const name = items[selectedItemIndex];
+        const name = categories[currentCategory][selectedItemIndex];
         entry_item.value = name;
         renderItems(); // Re-render to update selection
         entry_qty.focus();
@@ -666,16 +820,16 @@
 
     if(type === 'del-item'){
       if(confirm('هل تريد حذف هذا الصنف؟')){
-        items.splice(+i,1);
-        saveItems(); 
+        categories[category].splice(+i,1);
+        saveCategories(); 
         renderItems();
         showNotification('تم حذف الصنف بنجاح');
       }
     } else if(type === 'edit-item'){
-      const newName = prompt('عدّل اسم الصنف:', items[+i]);
+      const newName = prompt('عدّل اسم الصنف:', categories[category][+i]);
       if(newName && newName.trim()){
-        items[+i] = newName.trim();
-        saveItems(); 
+        categories[category][+i] = newName.trim();
+        saveCategories(); 
         renderItems();
         showNotification('تم تعديل الصنف بنجاح');
       }
@@ -706,13 +860,23 @@
       return;
     }
     
-    if(items.includes(v)) {
+    // Check if item exists in any category
+    let exists = false;
+    Object.values(categories).forEach(catItems => {
+      if(catItems.includes(v)) exists = true;
+    });
+    
+    if(exists) {
       showNotification('هذا الصنف موجود بالفعل', 'warning');
       return;
     }
     
-    items.push(v); 
-    saveItems(); 
+    // Add to current category
+    if(!categories[currentCategory]) {
+      categories[currentCategory] = [];
+    }
+    categories[currentCategory].push(v); 
+    saveCategories(); 
     renderItems(); 
     newItemInput.value=''; 
     newItemInput.focus();
@@ -931,7 +1095,7 @@
 
   // Auto-save on page unload
   window.addEventListener('beforeunload', () => {
-    saveItems();
+    saveCategories();
     saveShops();
     saveRecords();
   });
